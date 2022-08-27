@@ -1,0 +1,26 @@
+#+TITLE: podcasts-vosk
+
+A tiny script that I use to get transcripts of podcasts with [[https://alphacephei.com/vosk/][Vosk API]].
+
+* Installation
+Clone the repository, create the virtual environment and
+
+#+begin_src bash
+pip install -r requirements.txt
+#+end_src
+
+Also install ffmpeg.
+
+* Usage
+Download a [[https://alphacephei.com/vosk/models][model]]. The smallest one works just fine for me.
+
+Unpack it, e.g.
+#+begin_src bash
+unzip vosk-model-small-en-us-0.15.zip
+mv vosk-model-small-en-us-0.15 model-small
+#+end_src
+
+The usage is as follows:
+#+begin_src bash
+python main.py --file-path <path-to-file> --model-path ./model-small --save-path <path-to-subtitles-file>.srt
+#+end_src
