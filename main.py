@@ -1,21 +1,21 @@
 import datetime
 import json
+import math
 import subprocess
 
 import click
 import srt
-import tqdm
 from vosk import KaldiRecognizer, Model, SetLogLevel
 
 
 @click.command()
 @click.option('--file-path', required=True, help='Path to the audio file')
-@click.option('--model-path', required=True, help='Path to the main model')
+@click.option('--model-path', required=True, help='Path to the model')
 @click.option(
     '--save-path',
     required=True,
     default='result.srt',
-    help='Path to the resulting SRT file'
+    help='Path to resulting SRT file'
 )
 @click.option(
     '--words-per-line',
@@ -24,9 +24,8 @@ from vosk import KaldiRecognizer, Model, SetLogLevel
     default=14,
     help='Number of words per line'
 )
-def transcribe(file_path, model_path, save_path, words_per_line):
+def transcribe(file_path, model_path, save_path, words_per_line=7):
     sample_rate = 16000
-    words_per_line = 7
     SetLogLevel(-1)
 
     model = Model(model_path)
@@ -42,19 +41,15 @@ def transcribe(file_path, model_path, save_path, words_per_line):
     )
 
     results = []
-    prev_start = 0
-    with tqdm.tqdm() as t:
-        while True:
-            data = process.stdout.read(4000)
-            if len(data) == 0:
-                break
-            if rec.AcceptWaveform(data):
-                res = json.loads(rec.Result())
-                results.append(res)
-                if 'result' in res:
-                    start = res['result'][0]['start']
-                    t.update(start - prev_start)
-                    prev_start = start
+    while True:
+        data = process.stdout.read(4000)
+        if len(data) == 0:
+            break
+        if rec.AcceptWaveform(data):
+            res = json.loads(rec.Result())
+            results.append(res)
+            if math.log2(len(results)) % 2 == 0:
+                print(f'Progress: {len(results)}')
     results.append(json.loads(rec.FinalResult()))
 
     subs = []
